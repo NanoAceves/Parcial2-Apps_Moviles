@@ -20,6 +20,8 @@ class MoviesActivity : AppCompatActivity(), View.OnClickListener{
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_movies)
 
+        val recView: RecyclerView = findViewById(R.id.xmlRecyclerView)
+
         val movies = ArrayList<MovieModel>()
         val titles: Array<String> = resources.getStringArray(R.array.title)
         val years: Array<String> = resources.getStringArray(R.array.year)
@@ -42,6 +44,12 @@ class MoviesActivity : AppCompatActivity(), View.OnClickListener{
             movie.imdbVotes = imdbVotes[i]
             movies.add(movie)
         }
+
+        val adapter: ApplicationsAdapter =
+            ApplicationsAdapter(this, movies)
+        recView.adapter = adapter
+        recView.layoutManager = LinearLayoutManager(this)
+
         val btnExit=findViewById<Button>(R.id.btn_exit)
 
         btnExit.setOnClickListener(this)
@@ -56,47 +64,6 @@ class MoviesActivity : AppCompatActivity(), View.OnClickListener{
         startActivity(intent)
     }
 
-    companion object {
-        private class DownloadData(context: Context, recyclerView: RecyclerView) :
-            AsyncTask<String, Void, String>() {
-            private val TAG = "DownloadData"
-
-            var localContext: Context by Delegates.notNull()
-            var localRecyclerView: RecyclerView by Delegates.notNull()
-
-            init {
-                localContext = context
-                localRecyclerView = recyclerView
-            }
-
-            override fun doInBackground(vararg url: String?): String {
-                Log.d(TAG, "doInBackground")
-                val rssFeed = downloadXML(url[0])
-                if (rssFeed.isEmpty()) {
-                    Log.e(TAG, "doInBackground: failed")
-                }
-                Log.d(TAG, rssFeed)
-                return rssFeed
-            }
-
-            override fun onPostExecute(result: String) {
-                super.onPostExecute(result)
-                Log.d(TAG, "onPostExecute")
-                val parsedApplication = ParseApplication()
-                parsedApplication.parse(result)
-
-                val adapter: ApplicationsAdapter =
-                    ApplicationsAdapter(localContext, parsedApplication.applications)
-                localRecyclerView.adapter = adapter
-                localRecyclerView.layoutManager = LinearLayoutManager(localContext)
-            }
-
-            private fun downloadXML(urlPath: String?): String {
-                return URL(urlPath).readText()
-            }
-        }
-
-    }
 
 
 }
